@@ -1,0 +1,7 @@
+[package]
+name = "tourism"
+version = "0.1.0"
+authors = ["Saghm Rossi <saghmrossi@gmail.com>"]
+edition = "2018"
+
+[dependencies]
