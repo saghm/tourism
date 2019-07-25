@@ -10,6 +10,4 @@ proc-macro = true
 [dependencies]
 syn = "0.15.42"
 quote = "0.6.13"
-
-[dependencies.tourism]
-path = "../tourism"
+proc-macro2 = "0.4.30"
