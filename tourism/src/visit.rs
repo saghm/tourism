@@ -28,22 +28,22 @@ macro_rules! impl_noop_visit {
 }
 
 macro_rules! impl_value_iterator_visit {
-    ( $hkty1:ident, $( $hkty2:ident ),+ ) => {
-        impl_value_iterator_visit!($hkty1);
-        impl_value_iterator_visit!( $( $hkty2),+ );
+    ( $hkty1:ident $( ($cons1:path) )*, $( $hkty2:ident $( ($cons2:path) )*),+ ) => {
+        impl_value_iterator_visit!( $hkty1 $( ($cons1) )* );
+        impl_value_iterator_visit!( $( $hkty2 $( ($cons2) )*),+ );
     };
 
-    ( $hkty:ident ) => {
+    ( $hkty:ident  $( ($cons:path) )* ) => {
             impl<T, W> Visit<W> for $hkty<T>
             where
                 W: Visitor<T>,
-                T: Visit<W>
+                T:  $( $cons + )*  Visit<W>
             {
                 fn walk(self, visitor: &mut W) -> Self {
                     self.into_iter().map(|t| visitor.visit(t)).collect()
                 }
             }
-            };
+    };
 }
 
 impl_noop_visit!(
@@ -68,37 +68,14 @@ impl_noop_visit!(
     usize
 );
 
-impl_value_iterator_visit!(Vec, LinkedList, VecDeque);
-
-impl<T, W> Visit<W> for BTreeSet<T>
-where
-    W: Visitor<T>,
-    T: Ord + Visit<W>,
-{
-    fn walk(self, visitor: &mut W) -> Self {
-        self.into_iter().map(|t| visitor.visit(t)).collect()
-    }
-}
-
-impl<T, W> Visit<W> for BinaryHeap<T>
-where
-    W: Visitor<T>,
-    T: Ord + Visit<W>,
-{
-    fn walk(self, visitor: &mut W) -> Self {
-        self.into_iter().map(|t| visitor.visit(t)).collect()
-    }
-}
-
-impl<T, W> Visit<W> for HashSet<T>
-where
-    W: Visitor<T>,
-    T: Hash + Eq + Visit<W>,
-{
-    fn walk(self, visitor: &mut W) -> Self {
-        self.into_iter().map(|t| visitor.visit(t)).collect()
-    }
-}
+impl_value_iterator_visit!(
+    BinaryHeap(Ord),
+    BTreeSet(Ord),
+    HashSet(Hash)(Eq),
+    LinkedList,
+    Vec,
+    VecDeque
+);
 
 impl<K, V, W> Visit<W> for BTreeMap<K, V>
 where
